@@ -36,6 +36,33 @@
                 {% endfor %}
             </tbody>
         </table>
+        <h2>Rented Bike</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Bike ID</th>
+                    <th>Bike Name</th>
+                    <th>Bike Type</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if user and user.rent_id %}
+                <tr>
+                    <td>{{ user.rented_id.bike_id }}</td>
+                    <td>{{ user.rented_id.bike_name }}</td>
+                    <td>{{ user.rented_id.bike_type }}</td>
+                    <td class="{% if user.rent_id == user.rented_bike.bike_id %}rent{% else %}available{% endif %}">
+                        {% if user.rent_id == user.rented_id.bike_id %}Return{% else %}Available{% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">No bike rented</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>        
         <h2>Login</h2>
         <form action="/login.html" method="POST">
             <div class="form-group">

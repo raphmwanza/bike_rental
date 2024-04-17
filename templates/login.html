@@ -71,7 +71,7 @@
                         <td>{{ "Available" if bike.availability else "Unavailable" }}</td>
                         <td>
                             {% if bike.availability %}
-                                <form action="/rent_bike/{{ bike.bike_id }}" method="POST">
+                                <form action="/rent_bike/{{ user.id }}/{{ bike.bike_id }}" method="POST">
                                     <button type="submit">Rent</button>
                                 </form>
                             {% else %}
@@ -83,12 +83,52 @@
                 </tbody>
             </table>
             <!-- End of bike selection system -->
+            <h2>Rented Bike</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bike ID</th>
+                        <th>Bike Name</th>
+                        <th>Bike Type</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%  if userid in users %}
+                    <tr>
+                        <td>{{ userid.rent_id }}</td>
+                        <td>{{ userid.bike_name }}</td>
+                        <td>{{ userid.bike_type }}</td>
+                        <td>{{ "Unavailable" if bike.availability else "Available" }}</td>
+
+                        <td>
+                            <form action="/return_bike/{{ user.id }}/{{ rented_bike.bike_id }}" method="POST">
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                <button type="submit">Return</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                       No Bike rented
+                    {% endif %}
+                </tbody>
+            </table>
 
             <a href="/logout">Logout</a>
         {% else %}
         
-            <h1>Login Failed</h1>
-            <p>Please check your email and password and try again.</p>
+            <h1>Login</h1>
+            {% if error %}
+            <p>{{ error }}</p>
+            {% endif %}
+            <form action="/login.html?user_id={{ user_id }}" method="POST">
+                <input type="hidden" name="user_id" value="{{ user_id }}">
+                <label for="email">Email:</label>
+                <input type="email" name="email" id="email" required><br><br>
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" required><br><br>
+                <button type="submit">Login</button>
+            </form>
         {% endif %}
     </div>
 </body>

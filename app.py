@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for
 from database import db
 from models import User, Bike
 from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
+app.secret_key = 'aHSGsMY7XHasgDHQM3MruhLuVWzdAJ7'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:Fi$ton2004@127.0.0.1/bike_rental'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
@@ -15,12 +16,10 @@ def index():
         email = request.form['email']
         password = request.form['password']
         
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(email=email, password=password).first()
 
-        if user and check_password_hash(user.password, password):
-            session['user_id'] = user.id
-            # Redirect to a different route upon successful login
-            return redirect(url_for('dashboard'))  # Assuming you have a 'dashboard' route
+        if user:
+            return redirect(url_for('login', user_id=user.id))  # Redirect with user ID as URL parameter
         else:
             return 'Invalid email or password'
 
@@ -29,59 +28,67 @@ def index():
 
 
 # Login route
-
 @app.route('/login.html', methods=['GET', 'POST'])
 def login():
+    user_id = request.args.get('user_id')  # Retrieve user ID from URL parameter
+    user = User.query.get(user_id)
+
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
         
         # Check if the user exists and the password is correct
-        user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password, password):
-            # If login successful, fetch customer information
-            bikes = Bike.query.filter_by(rent_id=user.id).all()
+        user = User.query.filter_by(email=email, password=password).first()
+        if user:
+            bikes = Bike.query.filter_by(bike_id=user.rent_id).all()
+            bikes = Bike.query.filter_by(availability=1).all()
             return render_template('login.html', user=user, bikes=bikes)
         else:
-            # If login failed, return error message
             return render_template('login.html', error='Invalid email or password')
 
-    # If GET request or login failed, render login page
-    return render_template('login.html')
+    return render_template('your_template.html', user_id=user, bikes=bikes)
+
 
 # Logout route
 @app.route('/logout')
 def logout():
-    session.pop('user_id', None)
     return redirect(url_for('index'))
 
-# Rent bike route
-@app.route('/rent_bike/<int:bike_id>')
-def rent_bike(bike_id):
-    if 'user_id' not in session:
-        return redirect(url_for('index'))
 
-    bike = Bike.query.get(bike_id)
-    if bike and bike.availability:
-        bike.availability = False
-        db.session.commit()
-        return 'Bike rented successfully!'
-    else:
-        return 'Bike not available.'
+# Rent bike route
+@app.route('/rent_bike/<int:user_id>/<int:bike_id>', methods=['POST'])
+def rent_bike(user_id, bike_id):
+    user = User.query.get(user_id)
+    if user:
+        bike = Bike.query.get(bike_id)
+        if bike and bike.availability:
+            bike.availability = False
+            user.rent_id = bike_id
+            db.session.commit()
+            return 'Bike rented successfully!'
+        else:
+            return 'Bike not available.'
+
+    return 'User not found'
+
 
 # Return bike route
-@app.route('/return_bike/<int:bike_id>')
-def return_bike(bike_id):
-    if 'user_id' not in session:
-        return redirect(url_for('index'))
+@app.route('/return_bike/<int:user_id>/<int:bike_id>')
+def return_bike(user_id, bike_id):
+    user = User.query.get(user_id)
+    if user:
+        bike = Bike.query.get(bike_id)
+        if bike and bike.availability:
+            bike.availability = True
+            user.rent_id = bike_id
+            db.session.commit()
+            return 'Bike returned successfully!'
+        else:
+            return 'Bike Available.'
 
-    bike = Bike.query.get(bike_id)
-    if bike and not bike.availability:
-        bike.availability = True
-        db.session.commit()
-        return 'Bike returned successfully!'
-    else:
-        return 'Bike not rented or already returned.'
+    return 'User not found'
+    
+
 
 if __name__ == '__main__':
     app.run(debug=True)
