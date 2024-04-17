@@ -23,3 +23,4 @@ AFTER DELETE ON customer_infos
 FOR EACH ROW
 EXECUTE FUNCTION reset_bike_availability();
 
+SELECT * FROM bike_info;

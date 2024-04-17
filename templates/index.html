@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike Rental</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">Bike Rental</h1>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>Bikes Available for Rent</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Bike ID</th>
+                    <th>Bike Name</th>
+                    <th>Bike Type</th>
+                    <th>Availability</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bike in bikes %}
+                <tr>
+                    <td>{{ bike.bike_id }}</td>
+                    <td>{{ bike.bike_name }}</td>
+                    <td>{{ bike.bike_type }}</td>
+                    <td class="{% if bike.availability %}available{% else %}unavailable{% endif %}">
+                        {% if bike.availability %}Available{% else %}Unavailable{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h2>Login</h2>
+        <form action="/login.html" method="POST">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        
+    </div>
+</body>
+</html>

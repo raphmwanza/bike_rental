@@ -17,4 +17,4 @@ CREATE TABLE bike_info(
 ALTER TABLE customer_infos
 ADD CONSTRAINT fk_bike_rent
 FOREIGN KEY (rent_id)
-REFERENCES bike_infos (bike_id);
+REFERENCES bike_info (bike_id);
